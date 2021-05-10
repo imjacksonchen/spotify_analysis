@@ -4,13 +4,86 @@ author: "Jackson Chen, Eric Legun, Omar Beltran"
 date: "5/10/2021"
 output: html_document
 ---
+```{r}
+library(tidyverse)
+library(FNN)
+```
 
 ```{r}
 spotify <- read_csv("top10s.csv")
 View(spotify)
 ```
 
+# Splitting data into training and testing
 ```{r}
-
+# Splitting into training and test sets
+set.seed(1)
+n <- nrow(spotify)
+train_indices <- sample(1:n, size = floor(0.7*n))
+train_set <- spotify[train_indices,]
+test_set <- spotify[-train_indices,]
 ```
+
+# Linear regression
+```{r run simple linear regression}
+# Using song characteristics (qualitative numbers)
+simple_lm <- lm(pop ~ bpm + nrgy + dnce + dB + live + val + live + dur + acous + spch, train_set)
+```
+
+```{r get standard errors}
+summary(simple_lm)
+```
+Found that nrgy and dB most significant and dur kind of significant
+
+# Get Predictions
+```{r}
+pred <- predict(simple_lm, test_set)
+```
+
+```{r}
+MSE <- mean( (test_set$pop  - pred )^2 )
+```
+
+
+# KNN regression
+```{r}
+knn_df <- data.frame(predictor = spotify$dur, response = spotify$pop)
+knn_df_norm <- df %>%
+  mutate(across(predictor, scale))
+
+n <- nrow(knn_df_norm)
+train_indices <- sample(1:n, size = floor(0.5*n))
+train_set <- knn_df_norm[train_indices,]
+test_set <- knn_df_norm[-train_indices,]
+
+test_set_pred_df <- data.frame(pop = test_set$response)
+```
+
+```{r}
+m <- knn.reg(train = train_set$predictor, 
+             test = test_set_pred_df, # test argument should be a data frame
+             y = train_set$response, 
+             k = 3)
+test_set_pred_df$pred <- m$pred 
+```
+
+```{r}
+ggplot() +
+  geom_line(data = test_set_pred_df, aes(x = pop, y = pred), 
+            color = "red", lwd = 1) +
+  geom_point(data = knn_df_norm, aes(x= predictor, y = response), 
+             color = "blue", alpha = 0.25) +
+  ggtitle("KNN Regression for K = 3")
+```
+
+
+
+
+
+
+
+
+
+
+
 
