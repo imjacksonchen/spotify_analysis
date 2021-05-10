@@ -1,0 +1,16 @@
+---
+title: "Spotify_Final_Project"
+author: "Jackson Chen, Eric Legun, Omar Beltran"
+date: "5/10/2021"
+output: html_document
+---
+
+```{r}
+spotify <- read_csv("top10s.csv")
+View(spotify)
+```
+
+```{r}
+
+```
+
